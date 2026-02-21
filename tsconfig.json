@@ -1,0 +1,7 @@
+{
+  "files": [],
+  "include": ["tsconfig.app.json"],
+  "compilerOptions": {
+    "composite": true
+  }
+}
