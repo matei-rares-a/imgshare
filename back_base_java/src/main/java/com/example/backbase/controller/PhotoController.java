@@ -2,6 +2,8 @@ package com.example.backbase.controller;
 
 import com.example.backbase.model.ImageMetadata;
 import com.example.backbase.service.PhotoService;
+import com.example.backbase.service.PhotoServiceAWS;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +22,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class PhotoController {
 
+    //private final PhotoServiceAWS photoService;
     private final PhotoService photoService;
 
     public PhotoController(PhotoService photoService) {
@@ -42,7 +45,18 @@ public class PhotoController {
         try {
             List<ImageMetadata> images = photoService.listImages();
             return ResponseEntity.ok(Map.of("images", images));
-        } catch (IOException e) {
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to list images"));
+        }
+    }
+
+    @GetMapping("/list-paginated")
+    public ResponseEntity<?> listPaginated(@RequestParam(defaultValue = "0") int page) {
+        try {
+            List<ImageMetadata> images = photoService.listImagesPaginated(page);
+            return ResponseEntity.ok(Map.of("images", images));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to list images"));
         }
@@ -84,7 +98,7 @@ public class PhotoController {
         try {
             photoService.deleteImage(filename);
             return ResponseEntity.ok(Map.of("success", true, "message", "File deleted successfully"));
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to delete file"));
         }
@@ -95,7 +109,7 @@ public class PhotoController {
         try {
             int count = photoService.deleteAll();
             return ResponseEntity.ok(Map.of("success", true, "message", "Deleted " + count + " file(s) successfully", "deletedCount", count));
-        } catch (IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to delete files"));
         }

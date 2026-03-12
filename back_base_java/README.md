@@ -16,7 +16,10 @@ CORS is enabled for all origins.
 
 ```sh
 mvn clean package
-java -jar target/back_base-0.0.1-SNAPSHOT.jar
+java -jar target/back_base-0.0.1.jar
 ```
 
 The service listens on port 8080 by default and creates a `photos` directory next to the jar if it doesn't exist.
+
+
+The .aws/configure contains the iam role that these application has 

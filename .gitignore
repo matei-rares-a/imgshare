@@ -55,6 +55,7 @@ photos/
 # Environment
 .env
 .env.local
+secrets/
 
 # Editor swap files
 *.swp

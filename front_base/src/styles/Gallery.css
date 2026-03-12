@@ -368,3 +368,40 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Infinite Scroll Styles */
+.gallery-sentinel {
+  height: 50px;
+  width: 100%;
+}
+
+.gallery-loading-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 15px;
+}
+
+.gallery-loading-more p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

@@ -102,4 +102,21 @@ public class PhotoService {
             return count;
         }
     }
+
+    public List<ImageMetadata> listImagesPaginated(int page) throws IOException {
+        // First page (0) returns 50 images, subsequent pages return 40 images
+        int pageSize = page == 0 ? 50 : 40;
+        int skip = page == 0 ? 0 : 50 + (page - 1) * 40;
+
+        List<ImageMetadata> allImages = listImages();
+        
+        int startIndex = skip;
+        int endIndex = Math.min(skip + pageSize, allImages.size());
+        
+        if (startIndex >= allImages.size()) {
+            return new ArrayList<>();
+        }
+        
+        return allImages.subList(startIndex, endIndex);
+    }
 }
