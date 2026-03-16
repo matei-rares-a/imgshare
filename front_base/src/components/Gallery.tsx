@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { getBackendApiUrl, getBackendUrl } from '../utils/apiConfig'
 import '../styles/Gallery.css'
+import { CONFIG } from '../config/Config'
 
 interface GalleryProps {
   refreshTrigger?: number
@@ -9,15 +10,43 @@ function Gallery({ refreshTrigger }: GalleryProps) {
   const [images, setImages] = useState<any[]>([])
   const [selectedImage, setSelectedImage] = useState<any | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
+  // Initial load
   useEffect(() => {
-    loadImages()
+    loadInitialImages()
   }, [refreshTrigger])
 
-  const loadImages = async () => {
+  // Setup infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && images.length > 0) {
+          loadMoreImages()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current)
+    }
+
+    return () => {
+      if (sentinelRef.current) {
+        observer.unobserve(sentinelRef.current)
+      }
+    }
+  }, [loadingMore, hasMore, images.length])
+
+  const loadInitialImages = async () => {
     setLoading(true)
+    setCurrentPage(0)
     try {
-      const res = await fetch(getBackendApiUrl('/api/list'))
+      const res = await fetch(getBackendApiUrl('/api/list-paginated?page=0'))
       if (!res.ok) throw new Error('Failed to fetch images')
       const data = await res.json()
       // Convert relative URLs to absolute URLs
@@ -26,11 +55,48 @@ function Gallery({ refreshTrigger }: GalleryProps) {
         url: `${getBackendUrl()}${img.url}`
       }))
       setImages(imagesWithAbsoluteUrls)
+      // If we got fewer images than requested, there's no more data
+      setHasMore(imagesWithAbsoluteUrls.length >= CONFIG.INITIAL_LOAD_SIZE)
+      setCurrentPage(0)
     } catch (e) {
       console.error('Error loading images:', e)
       setImages([])
+      setHasMore(false)
     }
     setLoading(false)
+  }
+
+  const loadMoreImages = async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const nextPage = currentPage + 1
+      const res = await fetch(getBackendApiUrl(`/api/list-paginated?page=${nextPage}`))
+      if (!res.ok) throw new Error('Failed to fetch more images')
+      const data = await res.json()
+      const newImages = (data.images || []).map((img: any) => ({
+        ...img,
+        url: `${getBackendUrl()}${img.url}`
+      }))
+
+      setImages((prevImages) => {
+        // Combine old and new images
+        const combined = [...prevImages, ...newImages]
+        // Keep only the most recent 100 images
+        if (combined.length > 100) {
+          return combined.slice(-100)
+        }
+        return combined
+      })
+
+      setCurrentPage(nextPage)
+      // If we got fewer images than requested (20 for subsequent pages), there's no more data
+      setHasMore(newImages.length >= CONFIG.PAGE_LOAD_SIZE)
+    } catch (e) {
+      console.error('Error loading more images:', e)
+      setHasMore(false)
+    }
+    setLoadingMore(false)
   }
 
   const handleDownload = async (image: any) => {
@@ -110,6 +176,15 @@ function Gallery({ refreshTrigger }: GalleryProps) {
               </div>
             ))}
           </div>
+          {/* Sentinel element for infinite scroll */}
+          <div ref={sentinelRef} className="gallery-sentinel"></div>
+          {/* Loading indicator for more images */}
+          {loadingMore && (
+            <div className="gallery-loading-more">
+              <div className="spinner"></div>
+              <p>Loading more images...</p>
+            </div>
+          )}
         </>
       )}
 

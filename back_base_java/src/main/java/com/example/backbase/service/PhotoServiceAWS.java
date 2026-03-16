@@ -121,4 +121,48 @@ public class PhotoServiceAWS {
 
         return count;
     }
+
+    @Value("${gallery.initial-load}")
+    private int initialLoad;
+
+    @Value("${gallery.page-load}")
+    private int pageLoad;
+
+    public List<ImageMetadata> listImagesPaginated(int page) {
+        // First page (0) returns 50 images, subsequent pages return 40 images
+        int pageSize = page == 0 ? initialLoad : pageLoad;
+        // Request extra items to ensure we get enough after sorting
+        int requestSize = pageSize + initialLoad; // Buffer for sorting by timestamp
+        
+        int markerIndex = page == 0 ? 0 : initialLoad + (page - 1) * pageLoad;
+        
+        // Fetch all objects and sort by timestamp (most recent first)
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .maxKeys(Math.max(1000, markerIndex + requestSize)) // Request enough to get to current page
+                .build();
+
+        ListObjectsV2Response response = s3.listObjectsV2(request);
+
+        // Convert to ImageMetadata and sort by timestamp descending
+        List<ImageMetadata> allImages = response.contents().stream()
+                .map(obj -> {
+                    String filename = obj.key();
+                    long uploadedAt = parseTimestamp(filename, obj.size());
+                    String fileSize = String.format("%.2f KB", obj.size() / 1024.0);
+                    return new ImageMetadata(filename, "/api/photos/" + filename, uploadedAt, fileSize);
+                })
+                .sorted(Comparator.comparingLong(ImageMetadata::getUploadedAt).reversed())
+                .collect(Collectors.toList());
+
+        // Calculate pagination boundaries
+        int startIndex = markerIndex;
+        int endIndex = Math.min(markerIndex + pageSize, allImages.size());
+
+        if (startIndex >= allImages.size()) {
+            return List.of();
+        }
+
+        return allImages.subList(startIndex, endIndex);
+    }
 }

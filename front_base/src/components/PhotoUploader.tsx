@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { generateRandomFileName } from '../utils/fileUtils'
-import { compressDataUrl } from '../utils/imageCompress'
+
+import imageCompression from "browser-image-compression";
+
 import { getBackendApiUrl } from '../utils/apiConfig'
 import '../styles/PhotoUploader.css'
 
@@ -38,8 +39,24 @@ function PhotoUploader({ onImageSaved }: PhotoUploaderProps) {
     if (file) {
       setIsSaving(true)
       try {
+        const options = {
+        //  maxSizeMB: 2,
+          // maxWidthOrHeight: 1024,
+           initialQuality: 0.7,   // 70% quality
+          useWebWorker: true,
+        };
+        let compressedFile: File | Blob = file;
+        try {
+          compressedFile = await imageCompression(file, options);
+        }
+        catch (error) {
+          compressedFile= file;
+          console.error('Error during image compression:', error);
+          alert('Error compressing image. Please try again with a smaller file.');
+        }
+        
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('file', compressedFile)
         const res = await fetch(getBackendApiUrl('/api/upload'), {
           method: 'POST',
           body: formData
