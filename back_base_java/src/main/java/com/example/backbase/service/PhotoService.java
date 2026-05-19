@@ -14,8 +14,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 @Service
-public class PhotoService {
+@ConditionalOnProperty(name = "storage.backend", havingValue = "local")
+public class PhotoService implements StorageService {
 
     @Value("${photo.storage.dir:photos}")
     private String storageDir;

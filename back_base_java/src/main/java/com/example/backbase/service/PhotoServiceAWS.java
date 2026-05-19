@@ -11,25 +11,42 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import java.io.IOException;
-
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 @Service
-public class PhotoServiceAWS {
+@ConditionalOnProperty(name = "storage.backend", havingValue = "s3", matchIfMissing = true)
+public class PhotoServiceAWS implements StorageService {
 
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
+    @Value("${aws.s3.region:eu-central-1}")
+    private String regionName;
+
+    @Value("${aws.s3.presigned-url.upload-ttl-minutes:15}")
+    private int uploadTtlMinutes;
+
+    @Value("${aws.s3.presigned-url.download-ttl-minutes:60}")
+    private int downloadTtlMinutes;
+
     private final S3Client s3;
+    private final S3Presigner presigner;
 
     public PhotoServiceAWS() {
-        this.s3 = S3Client.builder()
-                .region(Region.EU_CENTRAL_1)
-                .build();
+        Region region = Region.of(System.getProperty("aws.s3.region",
+                System.getenv().getOrDefault("AWS_REGION", "eu-central-1")));
+        this.s3 = S3Client.builder().region(region).build();
+        this.presigner = S3Presigner.builder().region(region).build();
     }
 
     public String store(MultipartFile file) throws IOException {
@@ -52,6 +69,7 @@ public class PhotoServiceAWS {
         return randomName;
     }
 
+    @Override
     public List<ImageMetadata> listImages() {
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(bucketName)
@@ -64,13 +82,48 @@ public class PhotoServiceAWS {
                     String filename = obj.key();
                     long uploadedAt = parseTimestamp(filename, obj.size());
                     String fileSize = String.format("%.2f KB", obj.size() / 1024.0);
-                    return new ImageMetadata(filename, "/api/photos/" + filename, uploadedAt, fileSize);
+                    // Return presigned GET URL — client fetches directly from S3, not through app
+                    String url = generatePresignedDownloadUrl(filename);
+                    return new ImageMetadata(filename, url, uploadedAt, fileSize);
                 })
                 .sorted(Comparator.comparingLong(ImageMetadata::getUploadedAt).reversed())
                 .collect(Collectors.toList());
     }
 
     
+
+    /**
+     * Returns a presigned S3 PUT URL valid for uploadTtlMinutes.
+     * Client uploads the file binary directly to S3 — zero traffic through the app node.
+     */
+    @Override
+    public String generatePresignedUploadUrl(String objectKey, String contentType) {
+        PresignedPutObjectRequest presigned = presigner.presignPutObject(r -> r
+                .signatureDuration(Duration.ofMinutes(uploadTtlMinutes))
+                .putObjectRequest(p -> p
+                        .bucket(bucketName)
+                        .key(objectKey)
+                        .contentType(contentType)
+                )
+        );
+        return presigned.url().toString();
+    }
+
+    /**
+     * Returns a presigned S3 GET URL valid for downloadTtlMinutes.
+     * Client fetches the image directly from S3 — zero traffic through the app node.
+     */
+    @Override
+    public String generatePresignedDownloadUrl(String objectKey) {
+        PresignedGetObjectRequest presigned = presigner.presignGetObject(r -> r
+                .signatureDuration(Duration.ofMinutes(downloadTtlMinutes))
+                .getObjectRequest(g -> g
+                        .bucket(bucketName)
+                        .key(objectKey)
+                )
+        );
+        return presigned.url().toString();
+    }
 
     private long parseTimestamp(String filename, long defaultValue) {
         try {
@@ -150,7 +203,8 @@ public class PhotoServiceAWS {
                     String filename = obj.key();
                     long uploadedAt = parseTimestamp(filename, obj.size());
                     String fileSize = String.format("%.2f KB", obj.size() / 1024.0);
-                    return new ImageMetadata(filename, "/api/photos/" + filename, uploadedAt, fileSize);
+                    String url = generatePresignedDownloadUrl(filename);
+                    return new ImageMetadata(filename, url, uploadedAt, fileSize);
                 })
                 .sorted(Comparator.comparingLong(ImageMetadata::getUploadedAt).reversed())
                 .collect(Collectors.toList());
