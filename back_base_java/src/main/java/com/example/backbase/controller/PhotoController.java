@@ -1,7 +1,9 @@
 package com.example.backbase.controller;
 
+import com.example.backbase.model.CursorPage;
 import com.example.backbase.model.ImageMetadata;
 import com.example.backbase.service.IdempotencyService;
+import com.example.backbase.service.PhotoServiceAWS;
 import com.example.backbase.service.StorageService;
 
 import org.springframework.http.HttpHeaders;
@@ -24,10 +26,16 @@ public class PhotoController {
 
     private final StorageService storageService;
     private final IdempotencyService idempotencyService;
+    /** Nullable: only present when storage.backend=s3. Used for confirm-upload dedup. */
+    private final PhotoServiceAWS photoServiceAWS;
 
-    public PhotoController(StorageService storageService, IdempotencyService idempotencyService) {
+    public PhotoController(StorageService storageService,
+                           IdempotencyService idempotencyService,
+                           @org.springframework.beans.factory.annotation.Autowired(required = false)
+                           PhotoServiceAWS photoServiceAWS) {
         this.storageService = storageService;
         this.idempotencyService = idempotencyService;
+        this.photoServiceAWS = photoServiceAWS;
     }
 
     // -------------------------------------------------------------------------
@@ -70,6 +78,64 @@ public class PhotoController {
                     .body(Map.of("error", "Presigned URLs not supported by active storage backend"));
         }
         return ResponseEntity.ok(Map.of("filename", filename, "downloadUrl", downloadUrl));
+    }
+
+    // -------------------------------------------------------------------------
+    // Cursor-based list — preferred over offset pagination for high traffic
+    // -------------------------------------------------------------------------
+
+    /**
+     * GET /api/v1/list-cursor?cursor=<base64>&size=20
+     * Returns { images: [...], nextCursor: "...", hasMore: true }
+     * cursor omitted or blank → first page.
+     * Use nextCursor from response as cursor param for next page.
+     */
+    @GetMapping("/list-cursor")
+    public ResponseEntity<?> listCursor(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "20") int size) {
+        try {
+            CursorPage<ImageMetadata> page = storageService.listImagesCursor(cursor, size);
+            return ResponseEntity.ok(Map.of(
+                    "images", page.items(),
+                    "nextCursor", page.nextCursor() != null ? page.nextCursor() : "",
+                    "hasMore", page.hasMore()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to list images"));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Confirm-upload — for presigned URL flow + server-side deduplication
+    // -------------------------------------------------------------------------
+
+    /**
+     * POST /api/v1/confirm-upload
+     * Body: { "objectKey": "...", "contentHash": "<sha256hex>", "size": 12345, "mimeType": "image/jpeg" }
+     * Call after client finishes PUT to presigned URL.
+     * If duplicate found: redundant S3 object is cleaned up; response returns canonical objectKey.
+     */
+    @PostMapping("/confirm-upload")
+    public ResponseEntity<?> confirmUpload(@RequestBody Map<String, Object> body) {
+        String objectKey   = (String) body.get("objectKey");
+        String contentHash = (String) body.get("contentHash");
+        String mimeType    = (String) body.getOrDefault("mimeType", "application/octet-stream");
+        long   size        = body.get("size") instanceof Number n ? n.longValue() : 0L;
+
+        if (objectKey == null || contentHash == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "objectKey and contentHash are required"));
+        }
+        if (photoServiceAWS == null) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .body(Map.of("error", "confirm-upload not supported for local backend"));
+        }
+        PhotoServiceAWS.ConfirmResult result = photoServiceAWS.confirmUpload(objectKey, contentHash, size, mimeType);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "objectKey", result.objectKey(),
+                "deduplicated", result.deduplicated()));
     }
 
     // -------------------------------------------------------------------------

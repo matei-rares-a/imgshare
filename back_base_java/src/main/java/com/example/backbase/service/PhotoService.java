@@ -14,7 +14,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.backbase.model.CursorPage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Service
 @ConditionalOnProperty(name = "storage.backend", havingValue = "local")
@@ -128,5 +131,39 @@ public class PhotoService implements StorageService {
         }
         
         return allImages.subList(startIndex, endIndex);
+    }
+
+    /**
+     * Cursor-based pagination for local filesystem.
+     * cursor = base64(uploadedAt_epochMs) of the last item on previous page.
+     */
+    @Override
+    public CursorPage<ImageMetadata> listImagesCursor(String cursor, int size) throws IOException {
+        List<ImageMetadata> all = listImages(); // sorted desc by uploadedAt
+
+        int startIndex = 0;
+        if (cursor != null && !cursor.isBlank()) {
+            long cursorTs = Long.parseLong(
+                    new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8));
+            for (int i = 0; i < all.size(); i++) {
+                if (all.get(i).getUploadedAt() < cursorTs) {
+                    startIndex = i;
+                    break;
+                }
+            }
+        }
+
+        int endIndex = Math.min(startIndex + size + 1, all.size());
+        List<ImageMetadata> slice = all.subList(startIndex, endIndex);
+        boolean hasMore = slice.size() > size;
+        List<ImageMetadata> page = hasMore ? slice.subList(0, size) : slice;
+
+        String nextCursor = null;
+        if (hasMore) {
+            long lastTs = page.get(page.size() - 1).getUploadedAt();
+            nextCursor = Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(String.valueOf(lastTs).getBytes(StandardCharsets.UTF_8));
+        }
+        return new CursorPage<>(page, nextCursor, hasMore);
     }
 }

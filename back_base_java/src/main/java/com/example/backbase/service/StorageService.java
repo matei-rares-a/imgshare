@@ -1,5 +1,6 @@
 package com.example.backbase.service;
 
+import com.example.backbase.model.CursorPage;
 import com.example.backbase.model.ImageMetadata;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,9 +18,16 @@ public interface StorageService {
 
     List<ImageMetadata> listImages() throws IOException;
 
+    /**
+     * Cursor-based pagination. cursor=null → first page.
+     * Returns CursorPage with nextCursor for subsequent requests.
+     */
+    CursorPage<ImageMetadata> listImagesCursor(String cursor, int size) throws IOException;
+
+    /** Offset pagination kept for backward compatibility. Prefer listImagesCursor. */
     List<ImageMetadata> listImagesPaginated(int page) throws IOException;
 
-    /** Load raw bytes — keep for backward compat; prefer presigned URLs for high-traffic. */
+    /** Load raw bytes — kept for backward compat; prefer presigned URLs for high-traffic. */
     byte[] loadImage(String filename) throws IOException;
 
     void deleteImage(String filename) throws IOException;
@@ -42,3 +50,4 @@ public interface StorageService {
         return null;
     }
 }
+
