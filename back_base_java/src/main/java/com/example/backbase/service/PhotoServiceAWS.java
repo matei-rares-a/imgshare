@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
 import java.io.IOException;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -49,6 +50,9 @@ public class PhotoServiceAWS implements StorageService {
     @Value("${gallery.page-load:20}")
     private int pageLoad;
 
+    @Value("${aws.s3.endpoint:}")
+    private String endpointOverride;
+
     private S3Client s3;
     private S3Presigner presigner;
 
@@ -63,8 +67,15 @@ public class PhotoServiceAWS implements StorageService {
     @PostConstruct
     public void init() {
         Region region = Region.of(regionName);
-        this.s3 = S3Client.builder().region(region).build();
-        this.presigner = S3Presigner.builder().region(region).build();
+        S3Client.Builder s3Builder = S3Client.builder().region(region);
+        S3Presigner.Builder presignerBuilder = S3Presigner.builder().region(region);
+        if (endpointOverride != null && !endpointOverride.isBlank()) {
+            URI endpoint = URI.create(endpointOverride);
+            s3Builder.endpointOverride(endpoint).forcePathStyle(true);
+            presignerBuilder.endpointOverride(endpoint);
+        }
+        this.s3 = s3Builder.build();
+        this.presigner = presignerBuilder.build();
     }
 
     // -------------------------------------------------------------------------

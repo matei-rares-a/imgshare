@@ -170,6 +170,7 @@ function Gallery({ refreshTrigger }: GalleryProps) {
                   </div>
                 </div>
                 <div className="gallery-info">
+                  <p className="gallery-filename">{image.filename}</p>
                   <p className="gallery-time">{formatTimeAgo(image.uploadedAt)}</p>
                   <p className="gallery-size">{image.fileSize}</p>
                 </div>
