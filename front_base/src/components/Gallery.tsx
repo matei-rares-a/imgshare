@@ -152,7 +152,8 @@ function Gallery({ refreshTrigger }: GalleryProps) {
       ) : images.length === 0 ? (
         <div className="empty-gallery">
           <div className="empty-icon">📸</div>
-          <p>No images yet. Upload one to get started!</p>
+          <p>No images yet.</p>
+          <p className="empty-subtext">Upload the first photo to fill this gallery!</p>
         </div>
       ) : (
         <>
@@ -170,6 +171,7 @@ function Gallery({ refreshTrigger }: GalleryProps) {
                   </div>
                 </div>
                 <div className="gallery-info">
+                  <p className="gallery-filename">{image.filename}</p>
                   <p className="gallery-time">{formatTimeAgo(image.uploadedAt)}</p>
                   <p className="gallery-size">{image.fileSize}</p>
                 </div>

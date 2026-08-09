@@ -1,6 +1,37 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: imgshare-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=imgshare
+      - POSTGRES_USER=imgshare
+      - POSTGRES_PASSWORD=imgshare
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: imgshare-redis
+    ports:
+      - "6379:6379"
+
+  localstack:
+    image: localstack/localstack:3
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=eu-central-1
+      - EAGER_SERVICE_LOADING=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./localstack-init:/etc/localstack/init/ready.d
+
   app:
     build:
       context: .
@@ -11,9 +42,17 @@ services:
     environment:
       - SPRING_APPLICATION_NAME=demo
     restart: unless-stopped
+    depends_on:
+      - localstack
+      - postgres
+      - redis
     # healthcheck:
     #   test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/test/hello"]
     #   interval: 30s
     #   timeout: 10s
     #   retries: 3
     #   start_period: 10s
+
+volumes:
+  localstack_data:
+  postgres_data:
