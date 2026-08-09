@@ -15,7 +15,10 @@ function PhotoUploader({ onImageSaved }: PhotoUploaderProps) {
   const [fileSize, setFileSize] = useState<string>('')
   const [uploadTime, setUploadTime] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -83,28 +86,98 @@ function PhotoUploader({ onImageSaved }: PhotoUploaderProps) {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = ''
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = ''
+    }
   }
 
   return (
     <div className="photo-uploader">
       {!uploadedPhoto ? (
-        <div className="upload-section">
-          <label htmlFor="photo-input" className="upload-box">
-            <div className="upload-icon">📷</div>
-            <p className="upload-title">Upload a Photo</p>
-            <p className="upload-subtitle">
-              Click to select from camera or gallery
-            </p>
+        <>
+          <div className="upload-section">
+            <label htmlFor="photo-input" className="upload-box">
+              <div className="upload-icon">📷</div>
+              <p className="upload-title">Upload a Photo</p>
+              <p className="upload-subtitle">
+                Click to select from camera or gallery
+              </p>
+              <input
+                ref={fileInputRef}
+                id="photo-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden-input"
+              />
+            </label>
+          </div>
+
+          {/* Mobile-only floating action button */}
+          <div className="mobile-fab-container">
+            <button
+              type="button"
+              className="fab-button"
+              onClick={() => setShowMobileMenu(true)}
+              aria-label="Add photo"
+            >
+              +
+            </button>
+
+            {showMobileMenu && (
+              <div className="fab-menu-overlay" onClick={() => setShowMobileMenu(false)}>
+                <div className="fab-menu" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="fab-menu-item"
+                    onClick={() => {
+                      cameraInputRef.current?.click()
+                      setShowMobileMenu(false)
+                    }}
+                  >
+                    📷 Take Photo
+                  </button>
+                  <button
+                    type="button"
+                    className="fab-menu-item"
+                    onClick={() => {
+                      galleryInputRef.current?.click()
+                      setShowMobileMenu(false)
+                    }}
+                  >
+                    🖼️ Choose from Gallery
+                  </button>
+                  <button
+                    type="button"
+                    className="fab-menu-cancel"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <input
-              ref={fileInputRef}
-              id="photo-input"
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              className="hidden-input"
+            />
+            <input
+              ref={galleryInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
               className="hidden-input"
             />
-          </label>
-        </div>
+          </div>
+        </>
       ) : (
         <div className="preview-section">
           <div className="preview-container">

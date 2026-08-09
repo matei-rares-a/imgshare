@@ -152,7 +152,8 @@ function Gallery({ refreshTrigger }: GalleryProps) {
       ) : images.length === 0 ? (
         <div className="empty-gallery">
           <div className="empty-icon">📸</div>
-          <p>No images yet. Upload one to get started!</p>
+          <p>No images yet.</p>
+          <p className="empty-subtext">Upload the first photo to fill this gallery!</p>
         </div>
       ) : (
         <>

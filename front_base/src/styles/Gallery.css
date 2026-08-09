@@ -53,6 +53,12 @@
   font-size: 1rem;
 }
 
+.empty-subtext {
+  color: #999 !important;
+  font-size: 0.9rem !important;
+  margin-top: 4px;
+}
+
 /* Gallery Grid */
 .gallery-grid {
   display: grid;
