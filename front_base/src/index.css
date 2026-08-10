@@ -4,15 +4,30 @@
   box-sizing: border-box;
 }
 
+/* Same image as body — overscroll bounce reveals the photo everywhere, not a flat fallback color */
+html {
+  min-height: 100%;
+  background:
+    linear-gradient(135deg, rgba(76, 122, 61, 0.45) 0%, rgba(30, 60, 25, 0.55) 100%),
+    url('/imgs.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  /* blocks the rubber-band/glow overscroll effect so there's no gap past the content to reveal anything */
+  overscroll-behavior: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   min-height: 100vh;
   padding: 20px;
+  overscroll-behavior: none;
 }
 
 #root {
@@ -32,7 +47,7 @@ body {
 }
 
 header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #4c7a3d;
   color: white;
   padding: 40px 30px;
   text-align: center;
@@ -63,23 +78,46 @@ header p {
   right: 20px;
   width: 40px;
   height: 40px;
-  background: #667eea;
+  background: #4c7a3d;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(76, 122, 61, 0.4);
   display: block;
 }
 
 .admin-dot:hover {
-  background: #764ba2;
+  background: #3a5f2f;
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 20px rgba(76, 122, 61, 0.6);
 }
 
 .admin-dot:active {
   transform: scale(0.95);
+}
+
+/* Shown on the full-screen login view, which has no header of its own to host it */
+.login-back-link {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.95rem;
+  z-index: 100;
+}
+
+.login-back-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
 }
 
 .back-link {

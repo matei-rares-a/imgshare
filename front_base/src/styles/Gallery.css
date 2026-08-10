@@ -25,7 +25,7 @@
 }
 
 .image-count {
-  background: #667eea;
+  background: #6fbf73;
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -109,7 +109,7 @@
 }
 
 .btn-view {
-  background: #667eea;
+  background: #6fbf73;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -121,7 +121,7 @@
 }
 
 .btn-view:hover {
-  background: #764ba2;
+  background: #2e7d32;
   transform: scale(1.1);
 }
 
@@ -257,7 +257,7 @@
 
 .info-row .value.mono {
   font-family: 'Courier New', monospace;
-  color: #667eea;
+  color: #2e7d32;
   font-weight: 600;
 }
 
@@ -283,13 +283,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #6fbf73 0%, #2e7d32 100%);
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
 }
 
 .btn-primary:active {
@@ -394,7 +394,7 @@
   width: 30px;
   height: 30px;
   border: 3px solid #e0e0e0;
-  border-top-color: #667eea;
+  border-top-color: #6fbf73;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
