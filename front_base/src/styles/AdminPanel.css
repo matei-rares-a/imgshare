@@ -25,7 +25,7 @@
 }
 
 .image-count {
-  background: #667eea;
+  background: #6fbf73;
   color: white;
   padding: 6px 14px;
   border-radius: 20px;
@@ -82,9 +82,9 @@
   margin-bottom: 30px;
   flex-wrap: wrap;
   padding: 20px;
-  background: #f8f9ff;
+  background: #f2f8ee;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #6fbf73;
 }
 
 .control-group {
@@ -116,7 +116,7 @@
 
 .selection-count {
   font-size: 0.9rem;
-  color: #667eea;
+  color: #2e7d32;
   font-weight: 600;
 }
 
@@ -185,7 +185,7 @@
   grid-template-columns: 50px 100px 200px 150px 100px;
   gap: 15px;
   padding: 20px;
-  background: #f8f9ff;
+  background: #f2f8ee;
   border-bottom: 2px solid #e0e0e0;
   font-weight: 600;
   color: #333;
@@ -214,7 +214,7 @@
 }
 
 .table-row.selected {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(46, 125, 50, 0.1);
 }
 
 .col-check {
@@ -244,7 +244,7 @@
 .col-filename {
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  color: #667eea;
+  color: #2e7d32;
   word-break: break-all;
 }
 

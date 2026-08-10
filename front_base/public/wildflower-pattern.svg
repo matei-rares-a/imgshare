@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260">
+  <g opacity="0.55">
+    <!-- flower 1: pink daisy -->
+    <g transform="translate(40,50)">
+      <line x1="0" y1="0" x2="0" y2="22" stroke="#8fb96a" stroke-width="2"/>
+      <g fill="#f2a6b3">
+        <circle cx="0" cy="-10" r="6"/>
+        <circle cx="8" cy="-5" r="6"/>
+        <circle cx="8" cy="-14" r="6"/>
+        <circle cx="-8" cy="-5" r="6"/>
+        <circle cx="-8" cy="-14" r="6"/>
+      </g>
+      <circle cx="0" cy="-10" r="4" fill="#f6c453"/>
+    </g>
+
+    <!-- flower 2: yellow daisy, smaller -->
+    <g transform="translate(140,30) scale(0.8)">
+      <line x1="0" y1="0" x2="0" y2="20" stroke="#8fb96a" stroke-width="2"/>
+      <g fill="#f6c453">
+        <circle cx="0" cy="-9" r="5.5"/>
+        <circle cx="7" cy="-4" r="5.5"/>
+        <circle cx="7" cy="-13" r="5.5"/>
+        <circle cx="-7" cy="-4" r="5.5"/>
+        <circle cx="-7" cy="-13" r="5.5"/>
+      </g>
+      <circle cx="0" cy="-9" r="3.5" fill="#b3474f"/>
+    </g>
+
+    <!-- flower 3: lavender -->
+    <g transform="translate(200,110) scale(0.9)">
+      <line x1="0" y1="0" x2="0" y2="24" stroke="#8fb96a" stroke-width="2"/>
+      <g fill="#c9a0dc">
+        <circle cx="0" cy="-10" r="6"/>
+        <circle cx="8" cy="-5" r="6"/>
+        <circle cx="8" cy="-14" r="6"/>
+        <circle cx="-8" cy="-5" r="6"/>
+        <circle cx="-8" cy="-14" r="6"/>
+      </g>
+      <circle cx="0" cy="-10" r="4" fill="#f6c453"/>
+    </g>
+
+    <!-- flower 4: coral -->
+    <g transform="translate(60,170) scale(0.85)">
+      <line x1="0" y1="0" x2="0" y2="20" stroke="#8fb96a" stroke-width="2"/>
+      <g fill="#ef8767">
+        <circle cx="0" cy="-9" r="5.5"/>
+        <circle cx="7" cy="-4" r="5.5"/>
+        <circle cx="7" cy="-13" r="5.5"/>
+        <circle cx="-7" cy="-4" r="5.5"/>
+        <circle cx="-7" cy="-13" r="5.5"/>
+      </g>
+      <circle cx="0" cy="-9" r="3.5" fill="#fff9f0"/>
+    </g>
+
+    <!-- flower 5: white daisy -->
+    <g transform="translate(160,200)">
+      <line x1="0" y1="0" x2="0" y2="22" stroke="#8fb96a" stroke-width="2"/>
+      <g fill="#fff9f0" stroke="#f2a6b3" stroke-width="0.5">
+        <circle cx="0" cy="-10" r="6"/>
+        <circle cx="8" cy="-5" r="6"/>
+        <circle cx="8" cy="-14" r="6"/>
+        <circle cx="-8" cy="-5" r="6"/>
+        <circle cx="-8" cy="-14" r="6"/>
+      </g>
+      <circle cx="0" cy="-10" r="4" fill="#f6c453"/>
+    </g>
+
+    <!-- small leaves scattered -->
+    <path d="M 20 220 q 10 -14 22 -4 q -10 12 -22 4 Z" fill="#8fb96a"/>
+    <path d="M 220 40 q 10 -12 20 -2 q -8 10 -20 2 Z" fill="#9cc47a"/>
+    <path d="M 110 140 q 8 -10 18 -2 q -8 10 -18 2 Z" fill="#8fb96a"/>
+  </g>
+</svg>

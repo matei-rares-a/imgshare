@@ -1,6 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
 import GuestPage from './components/GuestPage'
-import AdminPage from './components/AdminPage'
+import AdminLogin from './components/AdminLogin'
+import AdminPanel from './components/AdminPanel'
 
 function App() {
   return (
@@ -14,9 +16,26 @@ function App() {
 }
 
 function GuestLayout() {
+  const navigate = useNavigate()
+  const lastTapRef = useRef(0)
+
+  const handleAdminDotTap = () => {
+    const now = Date.now()
+    if (now - lastTapRef.current < 500) {
+      lastTapRef.current = 0
+      navigate('/admin')
+    } else {
+      lastTapRef.current = now
+    }
+  }
+
   return (
     <div className="container">
-      <Link to="/admin" className="admin-dot"></Link>
+      <div
+        className="admin-dot"
+        onClick={handleAdminDotTap}
+        title="Tap twice to open admin"
+      ></div>
       <header>
         <div className="header-content">
           <div>
@@ -33,6 +52,25 @@ function GuestLayout() {
 }
 
 function AdminLayout() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    navigate('/')
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Link to="/" className="login-back-link">
+          ← Back to Gallery
+        </Link>
+        <AdminLogin onLogin={() => setIsAuthenticated(true)} />
+      </>
+    )
+  }
+
   return (
     <div className="admin-container">
       <header>
@@ -43,7 +81,7 @@ function AdminLayout() {
         </div>
       </header>
       <main>
-        <AdminPage />
+        <AdminPanel onLogout={handleLogout} />
       </main>
     </div>
   )
